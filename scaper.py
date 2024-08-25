@@ -29,7 +29,22 @@ def scrape_country_data(*country_list):
         
         # Obtain html country specific soup-content
         response = requests.get(url)
-        country_soup = BeautifulSoup(response.text, 'html.parser')
+
+        if response.url == "https://eifo.dk/":
+            # Handle redirection by appending a record with "Country Not Found"
+            pre_pd_data.append({
+                "Country_Name": country,
+                "Country_Risk_Classification": "Country Not Found",
+                "EIFOs_cover_policy(Public_Buyer)": "Country Not Found",
+                "EIFOs_cover_policy(Private_Buyer)": "Country Not Found",
+                "EIFOs_cover_policy (Bank)": "Country Not Found"
+            })
+            continue
+        else:
+            print(f"status code is {response.status_code}")
+            country_soup = BeautifulSoup(response.text, 'html.parser')
+
+        
         
         # Extract risk classification
         risk_classification_div = country_soup.find('div', class_='barometer-item--active')
@@ -141,7 +156,7 @@ def scrape_country_data(*country_list):
 
 # Example usage
 #list_of_countries = ['india', 'Japan', 'vietnam', 'china-people-s-republic-of']
-list_of_countries = ['japan', 'germany', 'united-kingdom']
+list_of_countries = ['japan', 'geany', 'united-gdom', "portugal"]
 df = scrape_country_data(*list_of_countries) 
 # df.style.set_table_attributes('style="font-size: 12px; color: black; border: 1px solid black;"')
 print(df)
