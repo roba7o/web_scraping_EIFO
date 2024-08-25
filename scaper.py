@@ -140,7 +140,8 @@ def scrape_country_data(*country_list):
     return df
 
 # Example usage
-list_of_countries = ['india', 'Japan', 'vietnam', 'china-people-s-republic-of'] 
+#list_of_countries = ['india', 'Japan', 'vietnam', 'china-people-s-republic-of']
+list_of_countries = ['japan', 'germany', 'united-kingdom']
 df = scrape_country_data(*list_of_countries) 
 # df.style.set_table_attributes('style="font-size: 12px; color: black; border: 1px solid black;"')
 print(df)
