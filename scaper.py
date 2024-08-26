@@ -27,9 +27,36 @@ def scrape_country_data(*country_list):
         url = f"{base_url}/{country.lower()}"
         print(f"url is {url}")
         
-        # Obtain html country specific soup-content
-        response = requests.get(url)
-        country_soup = BeautifulSoup(response.text, 'html.parser')
+        # Catching request errors, could include session attempts but might be overkill
+        try:
+            response = requests.get(url, timeout=1)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as errh: 
+            print("HTTP Error") 
+            print(errh.args[0]) 
+        except requests.ConnectionError as ce:
+            print("Failed to connect:", ce)
+        except requests.Timeout as te:
+            print("Request timed out:", te)  
+        except requests.RequestException as re:  
+            print("There was an error:", re)
+
+        #base-url handles 404 requests with incorrect country names with redirect. 
+        if response.url == "https://eifo.dk/":
+            # Handle redirection by appending a record with "Country Not Found"
+            pre_pd_data.append({
+                "Country_Name": country,
+                "Country_Risk_Classification": "Country Not Found",
+                "EIFOs_cover_policy(Public_Buyer)": "Country Not Found",
+                "EIFOs_cover_policy(Private_Buyer)": "Country Not Found",
+                "EIFOs_cover_policy (Bank)": "Country Not Found"
+            })
+            continue
+        else:
+            print(f"status code is {response.status_code} for valid country-name")
+            country_soup = BeautifulSoup(response.text, 'html.parser')
+
+        
         
         # Extract risk classification
         risk_classification_div = country_soup.find('div', class_='barometer-item--active')
@@ -45,22 +72,22 @@ def scrape_country_data(*country_list):
 
         cover_policy_dict = {
             "Public buyer": {
-                "Guarantees without credit": "",
-                "Up to 1 year": "",
-                "1-5 years": "",
-                "Over 5 years": ""
+                "Guarantees without credit": "No Data Available",
+                "Up to 1 year": "No Data Available",
+                "1-5 years": "No Data Available",
+                "Over 5 years": "No Data Available"
             },
             "Private buyer": {
-                "Guarantees without credit": "",
-                "Up to 1 year": "",
-                "1-5 years": "",
-                "Over 5 years": ""
+                "Guarantees without credit": "No Data Available",
+                "Up to 1 year": "No Data Available",
+                "1-5 years": "No Data Available",
+                "Over 5 years": "No Data Available"
             },
             "Bank": {
-                "Guarantees without credit": "",
-                "Up to 1 year": "",
-                "1-5 years": "",
-                "Over 5 years": ""
+                "Guarantees without credit": "No Data Available",
+                "Up to 1 year": "No Data Available",
+                "1-5 years": "No Data Available",
+                "Over 5 years": "No Data Available"
             }
         }
         
@@ -100,20 +127,20 @@ def scrape_country_data(*country_list):
                 String summarising and grouping the policies to avoid repeated condition periods.
                     
             """
-            combined_policies = []
-            previous_policy = ""
-            combined_period = ""
-            
+            combined_policies = []  #grouping policies with same condition (time dependancy)
+            previous_policy = ""    #storing previous policy for match
+            combined_period = ""    #string joining time periods/conditions with '&' if matching
+
             for period, policy in policy_dict.items():
                 if policy == previous_policy:
-                    combined_period += f" & {period}"
+                    combined_period += f" & {period}"   #concatenating periods if match
                 else:
-                    if previous_policy:
+                    if previous_policy: #ensuring invalid initial loop not appended
                         combined_policies.append(f"{combined_period}: {previous_policy}")
-                    combined_period = period
-                    previous_policy = policy
+                    combined_period = period    #assigning current period to (potential) combined
+                    previous_policy = policy    #assigning current policy to previous
             
-            if previous_policy:
+            if previous_policy: #ensuring final period/policies are appended
                 combined_policies.append(f"{combined_period}: {previous_policy}")
             
             return ' | '.join(combined_policies)
@@ -135,15 +162,28 @@ def scrape_country_data(*country_list):
         "EIFOs_cover_policy(Private_Buyer)",
         "EIFOs_cover_policy (Bank)"
     ]
+
+
     
     df = pd.DataFrame(pre_pd_data, columns=world_table_titles)
     return df
 
 #list_of_countries = ['india', 'Japan', 'vietnam', 'china-people-s-republic-of']
-list_of_countries = ['japan', 'germany', 'united-kingdom']
+#list_of_countries = ['japan', 'geany', 'united-gdom', "portugal"]
+
+
+list_of_countries = ["japan", "united-kingdom", "germany"]
+
+
+
 df = scrape_country_data(*list_of_countries) 
-#
-file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) 
-file_path = os.path.join("excel_outputs", f"countries_{file_name}.xlsx")
-with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+#print(df)
+
+file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) #creating custom file name, NOTE: different from submission requirements 
+
+if not os.path.exists("excel_outputs"):  #if dir doesnt exist
+    os.makedirs("excel_outputs")
+
+file_path = os.path.join("excel_outputs", f"Final_{file_name}.xlsx")
+with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  #excel writer from pandas dataframe
     df.to_excel(writer, sheet_name='Country_analysis', index=False)
