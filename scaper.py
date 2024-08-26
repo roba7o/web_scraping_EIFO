@@ -27,9 +27,21 @@ def scrape_country_data(*country_list):
         url = f"{base_url}/{country.lower()}"
         print(f"url is {url}")
         
-        # Obtain html country specific soup-content
-        response = requests.get(url)
+        # Catching request errors, could include session attempts but might be overkill
+        try:
+            response = requests.get(url, timeout=1)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as errh: 
+            print("HTTP Error") 
+            print(errh.args[0]) 
+        except requests.ConnectionError as ce:
+            print("Failed to connect:", ce)
+        except requests.Timeout as te:
+            print("Request timed out:", te)  
+        except requests.RequestException as re:  
+            print("There was an error:", re)
 
+        #base-url handles 404 requests with incorrect country names with redirect. 
         if response.url == "https://eifo.dk/":
             # Handle redirection by appending a record with "Country Not Found"
             pre_pd_data.append({
@@ -41,7 +53,7 @@ def scrape_country_data(*country_list):
             })
             continue
         else:
-            print(f"status code is {response.status_code}")
+            print(f"status code is {response.status_code} for valid country-name")
             country_soup = BeautifulSoup(response.text, 'html.parser')
 
         
@@ -60,22 +72,22 @@ def scrape_country_data(*country_list):
 
         cover_policy_dict = {
             "Public buyer": {
-                "Guarantees without credit": "",
-                "Up to 1 year": "",
-                "1-5 years": "",
-                "Over 5 years": ""
+                "Guarantees without credit": "No Data Available",
+                "Up to 1 year": "No Data Available",
+                "1-5 years": "No Data Available",
+                "Over 5 years": "No Data Available"
             },
             "Private buyer": {
-                "Guarantees without credit": "",
-                "Up to 1 year": "",
-                "1-5 years": "",
-                "Over 5 years": ""
+                "Guarantees without credit": "No Data Available",
+                "Up to 1 year": "No Data Available",
+                "1-5 years": "No Data Available",
+                "Over 5 years": "No Data Available"
             },
             "Bank": {
-                "Guarantees without credit": "",
-                "Up to 1 year": "",
-                "1-5 years": "",
-                "Over 5 years": ""
+                "Guarantees without credit": "No Data Available",
+                "Up to 1 year": "No Data Available",
+                "1-5 years": "No Data Available",
+                "Over 5 years": "No Data Available"
             }
         }
         
@@ -162,6 +174,8 @@ df = scrape_country_data(*list_of_countries)
 print(df)
 
 file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) 
+if not os.path.exists("excel_outputs"):
+    os.makedirs("excel_outputs")
 file_path = os.path.join("excel_outputs", f"countries_{file_name}.xlsx")
 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
     df.to_excel(writer, sheet_name='Country_analysis', index=False)
