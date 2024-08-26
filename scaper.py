@@ -181,9 +181,11 @@ df = scrape_country_data(*list_of_countries)
 # df.style.set_table_attributes('style="font-size: 12px; color: black; border: 1px solid black;"')
 print(df)
 
+#creating custom file name, NOTE: different from submission requirements
 file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) 
-if not os.path.exists("excel_outputs"):
+
+if not os.path.exists("excel_outputs"): #if dir doesnt exist
     os.makedirs("excel_outputs")
 file_path = os.path.join("excel_outputs", f"Final_{file_name}.xlsx")
-with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+with pd.ExcelWriter(file_path, engine='openpyxl') as writer:    #excel writer from pandas dataframe
     df.to_excel(writer, sheet_name='Country_analysis', index=False)
