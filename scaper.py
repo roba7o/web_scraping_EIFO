@@ -162,13 +162,21 @@ def scrape_country_data(*country_list):
         "EIFOs_cover_policy(Private_Buyer)",
         "EIFOs_cover_policy (Bank)"
     ]
+
+    
     
     df = pd.DataFrame(pre_pd_data, columns=world_table_titles)
     return df
 
 # Example usage
 #list_of_countries = ['india', 'Japan', 'vietnam', 'china-people-s-republic-of']
-list_of_countries = ['japan', 'geany', 'united-gdom', "portugal"]
+#list_of_countries = ['japan', 'geany', 'united-gdom', "portugal"]
+
+
+list_of_countries = ["japan", "united-kingdom", "germany"]
+
+
+
 df = scrape_country_data(*list_of_countries) 
 # df.style.set_table_attributes('style="font-size: 12px; color: black; border: 1px solid black;"')
 print(df)
@@ -176,6 +184,6 @@ print(df)
 file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) 
 if not os.path.exists("excel_outputs"):
     os.makedirs("excel_outputs")
-file_path = os.path.join("excel_outputs", f"countries_{file_name}.xlsx")
+file_path = os.path.join("excel_outputs", f"Final_{file_name}.xlsx")
 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
     df.to_excel(writer, sheet_name='Country_analysis', index=False)
