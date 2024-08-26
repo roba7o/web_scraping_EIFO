@@ -127,20 +127,20 @@ def scrape_country_data(*country_list):
                 String summarising and grouping the policies to avoid repeated condition periods.
                     
             """
-            combined_policies = []
-            previous_policy = ""
-            combined_period = ""
-            
+            combined_policies = []  #grouping policies with same condition (time dependancy)
+            previous_policy = ""    #storing previous policy for match
+            combined_period = ""    #string joining time periods/conditions with '&' if matching
+
             for period, policy in policy_dict.items():
                 if policy == previous_policy:
-                    combined_period += f" & {period}"
+                    combined_period += f" & {period}"   #concatenating periods if match
                 else:
-                    if previous_policy:
+                    if previous_policy: #ensuring invalid initial loop not appended
                         combined_policies.append(f"{combined_period}: {previous_policy}")
-                    combined_period = period
-                    previous_policy = policy
+                    combined_period = period    #assigning current period to (potential) combined
+                    previous_policy = policy    #assigning current policy to previous
             
-            if previous_policy:
+            if previous_policy: #ensuring final period/policies are appended
                 combined_policies.append(f"{combined_period}: {previous_policy}")
             
             return ' | '.join(combined_policies)
@@ -163,7 +163,7 @@ def scrape_country_data(*country_list):
         "EIFOs_cover_policy (Bank)"
     ]
 
-    
+
     
     df = pd.DataFrame(pre_pd_data, columns=world_table_titles)
     return df
