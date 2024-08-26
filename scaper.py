@@ -178,11 +178,9 @@ list_of_countries = ["japan", "united-kingdom", "germany"]
 
 
 df = scrape_country_data(*list_of_countries) 
-# df.style.set_table_attributes('style="font-size: 12px; color: black; border: 1px solid black;"')
 print(df)
 
-#creating custom file name, NOTE: different from submission requirements
-file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) 
+file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) #creating custom file name, NOTE: different from submission requirements 
 
 if not os.path.exists("excel_outputs"): #if dir doesnt exist
     os.makedirs("excel_outputs")
