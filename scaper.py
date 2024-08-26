@@ -168,7 +168,6 @@ def scrape_country_data(*country_list):
     df = pd.DataFrame(pre_pd_data, columns=world_table_titles)
     return df
 
-# Example usage
 #list_of_countries = ['india', 'Japan', 'vietnam', 'china-people-s-republic-of']
 #list_of_countries = ['japan', 'geany', 'united-gdom', "portugal"]
 
@@ -178,12 +177,13 @@ list_of_countries = ["japan", "united-kingdom", "germany"]
 
 
 df = scrape_country_data(*list_of_countries) 
-print(df)
+#print(df)
 
 file_name = '-'.join(country.lower().replace(' ', '-') for country in list_of_countries) #creating custom file name, NOTE: different from submission requirements 
 
-if not os.path.exists("excel_outputs"): #if dir doesnt exist
+if not os.path.exists("excel_outputs"):  #if dir doesnt exist
     os.makedirs("excel_outputs")
+
 file_path = os.path.join("excel_outputs", f"Final_{file_name}.xlsx")
-with pd.ExcelWriter(file_path, engine='openpyxl') as writer:    #excel writer from pandas dataframe
+with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  #excel writer from pandas dataframe
     df.to_excel(writer, sheet_name='Country_analysis', index=False)
